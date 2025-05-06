@@ -9,12 +9,27 @@ dns_auction
 simulate_dns
 simulate_vcg
 
-# Data files
-*.csv
-
 # OS files
 .DS_Store
 
 # Editors
 .vscode/
 *.swp
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+
+# virtualenv
+venv/
+
+# Output files
+*.txt
+*.png
+*.csv
+
+

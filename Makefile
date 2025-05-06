@@ -4,28 +4,31 @@ CXXFLAGS = -std=c++17 -Wall -Wextra -O2
 
 # Paths
 SRC_DIR = src
-TARGET = dns_auction
+TARGETS = dns_auction simulate_dns simulate_vcg
 
 # Source files
 SRC = $(wildcard $(SRC_DIR)/*.cpp)
 HEADERS = $(wildcard $(SRC_DIR)/*.hpp)
 
-# Build target
-$(TARGET): $(SRC) $(HEADERS)
-	$(CXX) $(CXXFLAGS) $(SRC) -o $(TARGET)
+# Default build: all targets
+all: $(TARGETS)
 
-# Run
-run: $(TARGET)
-	./$(TARGET)
-
-# Clean
-clean:
-	rm -f $(TARGET)
+# Main DNS Auction binary
+dns_auction: $(SRC_DIR)/main.cpp $(SRC_DIR)/auction.cpp $(SRC_DIR)/input_generator.cpp
+	$(CXX) $(CXXFLAGS) $^ -o dns_auction
 
 # Simulate DNS target
-simulate_dns: src/simulate_dns.cpp src/auction.cpp src/input_generator.cpp
+simulate_dns: $(SRC_DIR)/simulate_dns.cpp $(SRC_DIR)/auction.cpp $(SRC_DIR)/input_generator.cpp
 	$(CXX) $(CXXFLAGS) $^ -o simulate_dns
 
 # Simulate VCG target
-simulate_vcg: src/simulate_vcg.cpp src/input_generator.cpp
+simulate_vcg: $(SRC_DIR)/simulate_vcg.cpp $(SRC_DIR)/input_generator.cpp
 	$(CXX) $(CXXFLAGS) $^ -o simulate_vcg
+
+# Run DNS Auction
+run: dns_auction
+	./dns_auction
+
+# Clean all built binaries
+clean:
+	rm -f $(TARGETS)

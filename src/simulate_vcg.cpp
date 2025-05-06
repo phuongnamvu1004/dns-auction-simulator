@@ -1,5 +1,3 @@
-// simulate_vcg.cpp: Brute-force VCG simulator for small m (with winners column)
-
 #include "input_generator.hpp"
 #include <iostream>
 #include <fstream>
@@ -8,10 +6,12 @@
 #include <algorithm>
 #include <cmath>
 
-void generateAllSubsets(int m, std::vector<std::vector<int>>& subsets) {
+using namespace std;
+
+void generateAllSubsets(int m, vector<vector<int>>& subsets) {
     int total = 1 << m;
     for (int mask = 0; mask < total; ++mask) {
-        std::vector<int> subset;
+        vector<int> subset;
         for (int i = 0; i < m; ++i) {
             if (mask & (1 << i)) subset.push_back(i);
         }
@@ -20,16 +20,16 @@ void generateAllSubsets(int m, std::vector<std::vector<int>>& subsets) {
 }
 
 // Compute value of a bundle for a bidder (XOS max over clauses)
-double valueOfBundle(const Bidder& b, int clauses, const std::vector<int>& bundle) {
+double valueOfBundle(const Bidder& b, int clauses, const vector<int>& bundle) {
     double max_val = 0;
     for (int k = 0; k < clauses; ++k) {
         double sum = 0;
         for (int item : bundle) {
-            std::string key = "clause" + std::to_string(k) + "_Item" + std::to_string(item);
+            string key = "clause" + to_string(k) + "_Item" + to_string(item);
             auto it = b.itemValues.find(key);
             if (it != b.itemValues.end()) sum += it->second;
         }
-        max_val = std::max(max_val, sum);
+        max_val = max(max_val, sum);
     }
     return max_val;
 }
@@ -38,8 +38,8 @@ int main() {
     int num_bidders = 5;
     int num_items = 6;
     int clauses = 4;
-    int num_runs = 30;
-    int base_seed = 100;
+    int num_runs = 200;
+    int base_seed = 0;
     cout << "=== VCG Brute-force Simulator ===\n";
     cout << "Number of bidders: " << num_bidders << "\n";
     cout << "Number of items: " << num_items << "\n";
@@ -48,27 +48,27 @@ int main() {
     cout << "Base seed: " << base_seed << "\n";
     cout << "Generating random bidders...\n";
 
-    std::ofstream file("results_vcg.csv");
+    ofstream file("results/results_vcg.csv");
     file << "seed,num_bidders,num_items,num_clauses,total_welfare,winners\n";
 
     for (int run = 0; run < num_runs; ++run) {
         int seed = base_seed + run;
         auto bidders = generateRandomBidders(num_bidders, num_items, clauses, seed);
 
-        std::vector<std::vector<int>> all_subsets;
+        vector<vector<int>> all_subsets;
         generateAllSubsets(num_items, all_subsets);
 
         double best_welfare = 0;
-        std::vector<std::vector<int>> best_allocation(num_bidders);
+        vector<vector<int>> best_allocation(num_bidders);
 
         for (const auto& perm : all_subsets) {
-            std::vector<bool> used(num_items, false);
-            std::vector<std::vector<int>> allocation(num_bidders);
+            vector<bool> used(num_items, false);
+            vector<vector<int>> allocation(num_bidders);
             double total = 0;
 
             for (int i = 0; i < num_bidders; ++i) {
                 double max_val = 0;
-                std::vector<int> best_bundle;
+                vector<int> best_bundle;
                 for (const auto& bundle : all_subsets) {
                     bool valid = true;
                     for (int item : bundle) if (used[item]) valid = false;
@@ -101,6 +101,6 @@ int main() {
              << best_welfare << "," << winners << "\n";
     }
 
-    std::cout << "Completed VCG brute-force simulations.\n";
+    cout << "Completed VCG brute-force simulations.\n";
     return 0;
 }
