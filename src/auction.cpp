@@ -4,74 +4,108 @@
 #include <algorithm>
 #include <numeric>
 
-DNSAuction::DNSAuction(int bidders, int items)
-    : n_bidders(bidders), m_items(items) {
-    generateSubmodularValuations();
+using namespace std;
+
+DNSAuction::DNSAuction(int bidders, int items, int clauses, const vector<Bidder>& input)
+    : n_bidders(bidders), m_items(items), k_clauses(clauses) {
+    setValuationsFromInput(input);
 }
 
-void DNSAuction::generateSubmodularValuations() {
-    std::default_random_engine gen;
-    std::uniform_real_distribution<double> dist(1.0, 10.0);
-
-    valuations.resize(n_bidders, std::vector<double>(m_items));
+void DNSAuction::setValuationsFromInput(const vector<Bidder>& input) {
+    valuations.resize(n_bidders);
     for (int i = 0; i < n_bidders; ++i) {
-        double marginal = dist(gen);
-        for (int j = 0; j < m_items; ++j) {
-            valuations[i][j] = marginal;
-            marginal *= 0.8;  // diminishing returns
+        valuations[i].resize(k_clauses);
+        for (int k = 0; k < k_clauses; ++k) {
+            for (int j = 0; j < m_items; ++j) {
+                string key = "clause" + to_string(k) + "_Item" + to_string(j);
+                valuations[i][k].push_back(input[i].itemValues.at(key));
+            }
         }
     }
 }
 
-void DNSAuction::randomPartition(std::vector<int>& pricingGroup, std::vector<int>& allocationGroup) {
-    std::vector<int> all_bidders(n_bidders);
-    std::iota(all_bidders.begin(), all_bidders.end(), 0);
+void DNSAuction::randomPartition(vector<int>& pricingGroup, vector<int>& allocationGroup) {
+    vector<int> all(n_bidders);
+    iota(all.begin(), all.end(), 0);
+    shuffle(all.begin(), all.end(), default_random_engine(random_device{}()));
 
-    std::shuffle(all_bidders.begin(), all_bidders.end(), std::default_random_engine{});
     int half = n_bidders / 2;
-    pricingGroup.assign(all_bidders.begin(), all_bidders.begin() + half);
-    allocationGroup.assign(all_bidders.begin() + half, all_bidders.end());
+    pricingGroup.assign(all.begin(), all.begin() + half);
+    allocationGroup.assign(all.begin() + half, all.end());
 }
 
-std::vector<double> DNSAuction::computeItemPrices(const std::vector<int>& pricingGroup) {
-    std::vector<double> prices(m_items, 0.0);
+vector<double> DNSAuction::computeItemPrices(const vector<int>& pricingGroup) {
+    vector<double> prices(m_items, 0.0);
     for (int item = 0; item < m_items; ++item) {
-        for (int b : pricingGroup) {
-            prices[item] += valuations[b][item];
+        for (int bidder : pricingGroup) {
+            double max_val = 0;
+            for (const auto& clause : valuations[bidder]) {
+                max_val = max(max_val, clause[item]);
+            }
+            prices[item] += max_val;
         }
-        prices[item] /= pricingGroup.size();  // average price
+        prices[item] /= pricingGroup.size();
     }
     return prices;
 }
 
-void DNSAuction::allocateItems(const std::vector<int>& allocationGroup, const std::vector<double>& prices) {
-    std::vector<bool> item_taken(m_items, false);
-    for (int b : allocationGroup) {
-        std::vector<int> bundle;
+void DNSAuction::allocateItems(const vector<int>& allocationGroup, const vector<double>& prices) {
+    vector<bool> taken(m_items, false);
+    for (int bidder : allocationGroup) {
+        vector<int> bundle;
         for (int item = 0; item < m_items; ++item) {
-            if (!item_taken[item] && valuations[b][item] > prices[item]) {
-                bundle.push_back(item);
-                item_taken[item] = true;
+            if (!taken[item]) {
+                bool worth_it = false;
+                for (const auto& clause : valuations[bidder]) {
+                    if (clause[item] > prices[item]) {
+                        worth_it = true;
+                        break;
+                    }
+                }
+                if (worth_it) {
+                    bundle.push_back(item);
+                    taken[item] = true;
+                }
             }
         }
-        allocation[b] = bundle;
+        allocation[bidder] = bundle;
     }
 }
 
+double DNSAuction::evaluateXOS(int bidder, const vector<int>& bundle) {
+    double max_val = 0;
+    for (const auto& clause : valuations[bidder]) {
+        double sum = 0;
+        for (int item : bundle) {
+            sum += clause[item];
+        }
+        max_val = max(max_val, sum);
+    }
+    return max_val;
+}
+
 void DNSAuction::runSimulation() {
-    std::vector<int> pricingGroup, allocationGroup;
+    vector<int> pricingGroup, allocationGroup;
     randomPartition(pricingGroup, allocationGroup);
-    std::vector<double> prices = computeItemPrices(pricingGroup);
+    vector<double> prices = computeItemPrices(pricingGroup);
     allocateItems(allocationGroup, prices);
+
+
+    double total_value = 0;
+    for (const auto& pair : allocation) {
+        total_value += evaluateXOS(pair.first, pair.second);
+    }
+    std::cout << "Total Social Welfare: " << total_value << "";
 }
 
 void DNSAuction::printResults() {
-    std::cout << "\nFinal Allocation:\n";
+    cout << "\nFinal Allocation:\n";
     for (const auto& pair : allocation) {
-        std::cout << "Bidder " << pair.first << ": ";
+        cout << "Bidder " << pair.first << " receives items: ";
         for (int item : pair.second) {
-            std::cout << item << " ";
+            cout << item << " ";
         }
-        std::cout << "\n";
+        double value = evaluateXOS(pair.first, pair.second);
+        cout << "\n  (Value: " << value << ")\n";
     }
 }

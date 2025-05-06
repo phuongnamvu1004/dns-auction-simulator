@@ -1,0 +1,15 @@
+# Build artifacts
+*.o
+*.out
+*.exe
+*.log
+
+# Binaries
+dns_auction
+
+# OS files
+.DS_Store
+
+# Editors
+.vscode/
+*.swp

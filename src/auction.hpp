@@ -2,27 +2,30 @@
 #define AUCTION_HPP
 
 #include <vector>
-#include <string>
 #include <unordered_map>
+#include "input_generator.hpp"
+
+using namespace std;
 
 class DNSAuction {
 public:
-    DNSAuction(int bidders, int items);
-
+    DNSAuction(int bidders, int items, int clauses, const vector<Bidder>& input);
     void runSimulation();
     void printResults();
 
 private:
     int n_bidders;
     int m_items;
+    int k_clauses;
 
-    std::vector<std::vector<double>> valuations;
-    std::unordered_map<int, std::vector<int>> allocation;
+    vector<vector<vector<double>>> valuations;
+    unordered_map<int, vector<int>> allocation;
 
-    void generateSubmodularValuations();
-    void randomPartition(std::vector<int>& pricingGroup, std::vector<int>& allocationGroup);
-    std::vector<double> computeItemPrices(const std::vector<int>& pricingGroup);
-    void allocateItems(const std::vector<int>& allocationGroup, const std::vector<double>& prices);
+    void setValuationsFromInput(const vector<Bidder>& input);
+    void randomPartition(vector<int>& pricingGroup, vector<int>& allocationGroup);
+    vector<double> computeItemPrices(const vector<int>& pricingGroup);
+    void allocateItems(const vector<int>& allocationGroup, const vector<double>& prices);
+    double evaluateXOS(int bidder, const vector<int>& bundle);
 };
 
 #endif
