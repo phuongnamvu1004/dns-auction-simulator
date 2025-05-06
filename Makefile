@@ -21,3 +21,11 @@ run: $(TARGET)
 # Clean
 clean:
 	rm -f $(TARGET)
+
+# Simulate DNS target
+simulate_dns: src/simulate_dns.cpp src/auction.cpp src/input_generator.cpp
+	$(CXX) $(CXXFLAGS) $^ -o simulate_dns
+
+# Simulate VCG target
+simulate_vcg: src/simulate_vcg.cpp src/input_generator.cpp
+	$(CXX) $(CXXFLAGS) $^ -o simulate_vcg

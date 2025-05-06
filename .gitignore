@@ -6,6 +6,11 @@
 
 # Binaries
 dns_auction
+simulate_dns
+simulate_vcg
+
+# Data files
+*.csv
 
 # OS files
 .DS_Store

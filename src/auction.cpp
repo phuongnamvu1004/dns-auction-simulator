@@ -6,8 +6,8 @@
 
 using namespace std;
 
-DNSAuction::DNSAuction(int bidders, int items, int clauses, const vector<Bidder>& input)
-    : n_bidders(bidders), m_items(items), k_clauses(clauses) {
+DNSAuction::DNSAuction(int bidders, int items, int clauses, int seed, const std::vector<Bidder>& input)
+    : n_bidders(bidders), m_items(items), k_clauses(clauses), seed(seed) {
     setValuationsFromInput(input);
 }
 
@@ -95,7 +95,7 @@ void DNSAuction::runSimulation() {
     for (const auto& pair : allocation) {
         total_value += evaluateXOS(pair.first, pair.second);
     }
-    std::cout << "Total Social Welfare: " << total_value << "";
+    std::cout << "Total Social Welfare: " << total_value << "\n";
 }
 
 void DNSAuction::printResults() {
@@ -109,3 +109,10 @@ void DNSAuction::printResults() {
         cout << "\n  (Value: " << value << ")\n";
     }
 }
+
+vector<int> DNSAuction::getBundle(int bidder) const {
+    auto it = allocation.find(bidder);
+    if (it != allocation.end()) return it->second;
+    return {};
+}
+

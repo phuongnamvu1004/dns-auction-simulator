@@ -23,7 +23,8 @@ int main() {
 
     auto bidders = generateRandomBidders(num_bidders, num_items, clauses_per_bidder, seed);
 
-    DNSAuction auction(num_bidders, num_items, clauses_per_bidder, bidders);
+    DNSAuction auction(num_bidders, num_items, clauses_per_bidder, seed, bidders);
+
     auction.runSimulation();
     auction.printResults();
 
