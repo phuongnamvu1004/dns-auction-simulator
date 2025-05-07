@@ -10,7 +10,7 @@ int main() {
     int num_items = 6;
     int clauses_per_bidder = 4;
     int num_runs = 200;
-    int base_seed = 0;
+    int base_seed = 1;
     cout << "=== DNS Auction Simulator ===\n";
     cout << "Number of bidders: " << num_bidders << "\n";
     cout << "Number of items: " << num_items << "\n";
@@ -19,6 +19,7 @@ int main() {
     cout << "Base seed: " << base_seed << "\n";
     cout << "Generating random bidders...\n";
 
+    system("mkdir -p results"); // Create results directory if it doesn't exist
     ofstream file("results/results_dns.csv");
     file << "seed,num_bidders,num_items,num_clauses,total_welfare,winners\n";
 

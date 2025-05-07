@@ -29,7 +29,7 @@ venv/
 
 # Output files
 results/*.txt
-results/*.png
+results/plots/*.png
 results/*.csv
 
 

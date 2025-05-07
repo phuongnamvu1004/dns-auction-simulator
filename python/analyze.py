@@ -1,4 +1,3 @@
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -6,6 +5,7 @@ from pathlib import Path
 
 # Load files from results directory
 results_dir = Path(__file__).resolve().parent.parent / "results"
+results_dir.mkdir(parents=True, exist_ok=True)
 dns_file = results_dir / "results_dns.csv"
 vcg_file = results_dir / "results_vcg.csv"
 
